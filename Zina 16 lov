@@ -1,0 +1,49 @@
+const Discord = require('discord.js');
+const client = new Discord.Client();
+
+const shopItems = [
+    { name: 'Item 1', price: 10 },
+    { name: 'Item 2', price: 20 },
+    { name: 'Item 3', price: 30 },
+];
+
+let userBalances = new Map();
+
+client.on('message', message => {
+    if (message.content === '!shop') {
+        let shopMessage = 'مرحبًا بكم في المتجر! العناصر المتاحة:
+';
+        shopItems.forEach(item => {
+            shopMessage += `${item.name} - ${item.price} عملة
+`;
+        });
+        message.channel.send(shopMessage);
+    }
+
+    if (message.content.startsWith('!buy ')) {
+        const itemName = message.content.split(' ')[1];
+        const item = shopItems.find(i => i.name.toLowerCase() === itemName.toLowerCase());
+
+        if (!item) {
+            return message.channel.send('عذرًا، العنصر غير موجود في المتجر.');
+        }
+        
+        const userId = message.author.id;
+        const userBalance = userBalances.get(userId) || 0;
+
+        if (userBalance < item.price) {
+            return message.channel.send('عذرًا، ليس لديك ما يكفي من العملة لشراء هذا العنصر.');
+        }
+
+        userBalances.set(userId, userBalance - item.price);
+        message.channel.send(`تم شراء ${item.name} بنجاح!`);
+    }
+
+    if (message.content === '!balance') {
+        const userId = message.author.id;
+        const balance = userBalances.get(userId) || 0;
+        message.channel.send(`رصيدك الحالي: ${balance} عملة`);
+    }
+});
+
+client.login('MTM1OTcyMzM3MTAyOTU5NDIyMw.GBx_gO.ZAdljtpvI0B6zPmGeC2f0qgZVoUj421nOf8cbk');
